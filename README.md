@@ -3,3 +3,4 @@ In this repository I try to solve small Reinforcement Learning problems using Nu
 Current problems solved:
 
 1. Gridworld
+2. Gambler's Problem
