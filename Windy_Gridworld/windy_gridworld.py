@@ -101,7 +101,7 @@ class Agent(object):
     
     """First Visit Monte Carlo Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
-    # Updates the value function of visited states
+    # Updates the Action-Value function of visited states
     def first_monte_carlo(self, numEpisodes):
         N = {}                                        # Maintain the total number of first visits in all episodes
         R = {}                                        # Maintain returns over all episodes for each state action pairs
@@ -160,7 +160,7 @@ class Agent(object):
     
     """Every Visit Monte Carlo Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
-    # Updates the value function of visited states
+    # Updates the Action-Value function of visited states
     def every_monte_carlo(self, numEpisodes):
         N = {}                                        # Maintain the total number of first visits in all episodes
         R = {}                                        # Maintain returns over all episodes for each state action pairs
