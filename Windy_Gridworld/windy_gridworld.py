@@ -99,7 +99,7 @@ class Agent(object):
         #print(self.stateActionPairs)
                         
     
-    """First Visit Monte Carlo Function Definition"""
+    """First Visit Monte Carlo Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
     # Updates the value function of visited states
     def first_monte_carlo(self, numEpisodes):
@@ -158,7 +158,7 @@ class Agent(object):
                     #print()
             
     
-    """Every Visit Monte Carlo Function Definition"""
+    """Every Visit Monte Carlo Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
     # Updates the value function of visited states
     def every_monte_carlo(self, numEpisodes):
