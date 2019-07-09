@@ -137,9 +137,8 @@ class Agent(object):
                     elif(terminated == -1):
                         self.stateActionPairs[tuple(finalPosition)][(0,0)]['value'] = self.negativeReward
                     break
-            #print(episode)
-            #print()
-            # Calculate the returns from the entire episode
+                  
+            # Calculate the Monte Carlo returns from the entire episode
             for j, e in reversed(list(enumerate(episode))):
                 if(j == len(episode)-1):
                     G = self.stateActionPairs[e[0]][e[1]]['value']
@@ -196,7 +195,7 @@ class Agent(object):
                     elif(terminated == -1):
                         self.stateActionPairs[tuple(finalPosition)][(0,0)]['value'] = self.negativeReward
                     break
-            # Calculate the returns from the entire episode
+            # Calculate the Monte Carlo returns from the entire episode
             for j, e in reversed(list(enumerate(episode))):
                 if(j == len(episode)-1):
                     G = self.stateActionPairs[e[0]][e[1]]['value']
