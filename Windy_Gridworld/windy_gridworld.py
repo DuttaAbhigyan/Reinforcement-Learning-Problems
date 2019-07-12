@@ -208,7 +208,9 @@ class Agent(object):
                     self.stateActionPairs[q][tuple(m)]['value'] = R[q][tuple(m)]/N[q][tuple(m)]
     
    
-   """TD(n) Policy Evaluation Function Definition"""
+    """TD(n) Policy Evaluation Function Definition"""
+    # Takes in Number of Episodes
+    # Updates the Action-Value function of visited states
     def td_n(self, n, numEpisodes, alpha):         
        # Collect returns and visits for each state-action for each episode
         for j in range(numEpisodes):
