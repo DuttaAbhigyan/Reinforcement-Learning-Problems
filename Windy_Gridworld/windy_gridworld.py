@@ -247,6 +247,22 @@ class Agent(object):
             self.policy_evaluation(num_episodes)
             self.glie_policy_improvement()
             
+            
+     # Evaluate a policy using TD sampling methods like 
+    def td_policy_evaluation(self, n,  alpha, numEpisodes):
+        self.td_n(n, numEpisodes, alpha)
+            
+            
+    # Find by Policy Iteration the value of State-Action pairs and also the optimal
+    # policy using TD+GLIE methods
+    def td_policy_iteration(self, gamma, iterations, alpha, n, numEpisodes):
+        self.gamma = gamma
+        for i in range(iterations):
+            print(i)
+            print(self.epsilon)
+            self.epsilon = self.epsilon/(i+1)
+            self.td_policy_evaluation(n, alpha, numEpisodes)
+            self.glie_policy_improvement() 
                 
             
             
