@@ -301,8 +301,6 @@ class Agent(object):
     def td_policy_iteration(self, gamma, iterations, alpha, n, numEpisodes):
         self.gamma = gamma
         for i in range(iterations):
-            print(i)
-            print(self.epsilon)
             self.epsilon = self.epsilon/(i+1)
             self.td_policy_evaluation(n, alpha, numEpisodes)
             self.glie_policy_improvement() 
