@@ -343,3 +343,26 @@ world = create_world(gridSize, [[0, 1, 1, 0, 0, 0], []], target, falseTarget)
 agent = create_agent(world, gridSize, initialPosition, 'EMC', stepPenalty, 
                      reward, penalty, epsilon)
 agent.mc_policy_iteration(gamma, iterations, episodes)"""     
+
+
+# Examples (TD):
+#1. Without Wind
+
+"""
+target = np.array([1,4])
+falseTarget = np.array([0,0])
+gridSize = [6,6]
+initialPosition = np.array([3,0])
+reward = 15
+penalty = -5
+stepPenalty = -1
+epsilon = 0.2
+iterations = 10
+numEpisodes = 500
+gamma = 0.95
+alpha = 0.4
+n = 0
+world = create_world(gridSize, [[], []], target, falseTarget)
+agent = create_agent(world, gridSize, initialPosition, 'FMC', stepPenalty, 
+                     reward, penalty, epsilon)
+agent.td_policy_iteration(gamma, iterations, alpha, n, numEpisodes)"""
