@@ -231,7 +231,7 @@ class Agent(object):
     
     # Evaluate a policy using sampling methods like First Visit Monte Carlo
     # and Every Visit Monte Carlo                    
-    def policy_evaluation(self, numEpisodes):
+    def mc_policy_evaluation(self, numEpisodes):
         if(self.samplingAlgorithm == 'FMC'):
             self.first_monte_carlo(numEpisodes)
         elif(self.samplingAlgorithm == 'EMC'):
@@ -240,7 +240,7 @@ class Agent(object):
     
     # Find by Policy Iteration the value of State-Action pairs and also the optimal
     # policy using MC+GLIE methods
-    def policy_iteration(self, gamma, iterations, num_episodes):
+    def mc_policy_iteration(self, gamma, iterations, num_episodes):
         self.gamma = gamma
         for i in range(iterations):
             print(i)
@@ -328,4 +328,4 @@ gamma = 0.95
 world = create_world(gridSize, [[0, 1, 1, 0, 0, 0], []], target, falseTarget)
 agent = create_agent(world, gridSize, initialPosition, 'EMC', stepPenalty, 
                      reward, penalty, epsilon)
-agent.policy_iteration(gamma, iterations, episodes)"""     
+agent.mc_policy_iteration(gamma, iterations, episodes)"""     
