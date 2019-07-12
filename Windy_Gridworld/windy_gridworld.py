@@ -243,8 +243,6 @@ class Agent(object):
     def mc_policy_iteration(self, gamma, iterations, num_episodes):
         self.gamma = gamma
         for i in range(iterations):
-            print(i)
-            print(self.epsilon)
             self.epsilon = self.epsilon/(i+1)
             self.policy_evaluation(num_episodes)
             self.glie_policy_improvement()
