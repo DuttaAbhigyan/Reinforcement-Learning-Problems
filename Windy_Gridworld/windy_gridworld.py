@@ -96,7 +96,6 @@ class Agent(object):
                         self.stateActionPairs[(i,j)][tuple(k)]['value'] = 0
                     elif(initialization == 'random'):
                         self.stateActionPairs[(i,j)][tuple(k)]['value'] = np.random.randint(10)
-        #print(self.stateActionPairs)
                         
     
     """First Visit Monte Carlo Policy Evaluation Function Definition"""
@@ -153,8 +152,6 @@ class Agent(object):
             for m in self.movements:
                 if N[q][tuple(m)] != 0:
                     self.stateActionPairs[q][tuple(m)]['value'] = R[q][tuple(m)]/N[q][tuple(m)]
-                    #print(self.stateActionPairs[q][tuple(m)]['value'])
-                    #print()
             
     
     """Every Visit Monte Carlo Policy Evaluation Function Definition"""
@@ -249,7 +246,6 @@ class Agent(object):
                 
                 
                 if(truncEpisode[0][1] == (0,0) and truncEpisode[1][2]):
-                    #print(truncEpisode[0][0])
                     break
                 initialPosition = np.copy(truncEpisode[1][0])
                             
@@ -331,7 +327,6 @@ def create_world(gridSize, winds, target, falseTarget):
             longWinds.append(gridSize[1-i]*[0])
         else:
             longWinds.append(winds[i])
-    print(longWinds)
     world = Windy_Gridworld(gridSize, longWinds, target, falseTarget)
     
     return world
