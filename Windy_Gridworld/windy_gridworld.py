@@ -209,6 +209,49 @@ class Agent(object):
             for m in self.movements:
                 if N[q][tuple(m)] != 0:
                     self.stateActionPairs[q][tuple(m)]['value'] = R[q][tuple(m)]/N[q][tuple(m)]
+    
+   
+   """TD(n) Policy Evaluation Function Definition"""
+    def td_n(self, n, numEpisodes, alpha):         
+       # Collect returns and visits for each state-action for each episode
+        for j in range(numEpisodes):
+            initialPosition = np.copy(self.initialPosition)
+            while(True):
+                self.world.terminated = 0                      # Set terminated to 0
+                start = np.copy(initialPosition)
+                
+                # Generate a truncated episode
+                truncEpisode = []
+                for k in range(n+2): 
+                    pr = []
+                    # Get the policy from the table
+                    for i in self.movements:
+                        pr.append(self.stateActionPairs[tuple(start)][tuple(i)]['probability'])
+                    # Select action, move to next state, append state-action to episode,
+                    # re-initialize start to current position, if terminal end episode
+                    action = np.random.choice(np.arange(0, 5), p=pr)
+                    finalPosition, terminated = self.world.movement(start, self.movements[action])
+                    truncEpisode.append([tuple(start), tuple(self.movements[action]), 0])
+                    start = np.copy(finalPosition)
+                    if terminated:
+                        truncEpisode.append([tuple(finalPosition), (0,0), terminated])        # Adds the terminal state as state action pair
+                        if(terminated == 1):
+                            self.stateActionPairs[tuple(finalPosition)][(0,0)]['value'] = self.positiveReward
+                        elif(terminated == -1):
+                            self.stateActionPairs[tuple(finalPosition)][(0,0)]['value'] = self.negativeReward
+                        break
+                
+                # Calculate the TD returns from the entire episode
+                length = len(truncEpisode)
+                newEstimate = (length-1)*self.stepReward + self.gamma*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
+                oldEstimate = self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value']
+                self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
+                
+                
+                if(truncEpisode[0][1] == (0,0) and truncEpisode[1][2]):
+                    #print(truncEpisode[0][0])
+                    break
+                initialPosition = np.copy(truncEpisode[1][0])
                             
     
     """Policy Improvement based on the GLIE technique"""        
