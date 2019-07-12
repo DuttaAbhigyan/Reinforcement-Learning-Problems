@@ -240,7 +240,9 @@ class Agent(object):
                 
                 # Calculate the TD returns from the entire episode
                 length = len(truncEpisode)
-                newEstimate = (length-1)*self.stepReward + self.gamma*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
+                gammaFactor = (1 - self.gamma**(length-1)) / (1 - self.gamma)    # Calculate the entire Geometric Progression of gammas
+                newEstimate = (length-1)*self.stepReward*gammaFactor + \
+                               self.gamma*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
                 oldEstimate = self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value']
                 self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
                 
