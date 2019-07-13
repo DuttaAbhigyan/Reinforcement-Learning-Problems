@@ -287,7 +287,7 @@ class Agent(object):
         self.gamma = gamma
         for i in range(iterations):
             self.epsilon = self.epsilon/(i+1)
-            self.policy_evaluation(num_episodes)
+            self.mc_policy_evaluation(num_episodes)
             self.glie_policy_improvement()
             
             
