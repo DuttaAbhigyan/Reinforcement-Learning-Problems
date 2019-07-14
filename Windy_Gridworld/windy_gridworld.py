@@ -212,46 +212,55 @@ class Agent(object):
     # Takes in Number of Episodes
     # Updates the Action-Value function of visited states
     def td_n(self, n, numEpisodes, alpha):         
-       # Collect returns and visits for each state-action for each episode
+        # Repeat TD(n) learning for each epsiode
         for j in range(numEpisodes):
-            initialPosition = np.copy(self.initialPosition)
-            while(True):
-                self.world.terminated = 0                      # Set terminated to 0
-                start = np.copy(initialPosition)
-                
-                # Generate a truncated episode
+            end = np.copy(self.initialPosition)    # Starting of episode is constant
+            while True:
                 truncEpisode = []
-                for k in range(n+2): 
+                for i in range(n+1):
+                    flag = 0
+                    self.world.terminated = 0
+                    start = np.copy(end)
                     pr = []
-                    # Get the policy from the table
                     for i in self.movements:
                         pr.append(self.stateActionPairs[tuple(start)][tuple(i)]['probability'])
-                    # Select action, move to next state, append state-action to episode,
-                    # re-initialize start to current position, if terminal end episode
-                    action = np.random.choice(np.arange(0, 5), p=pr)
-                    finalPosition, terminated = self.world.movement(start, self.movements[action])
-                    truncEpisode.append([tuple(start), tuple(self.movements[action]), 0])
-                    start = np.copy(finalPosition)
+                    # Select action, move to next state
+                    action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                    end, terminated = self.world.movement(start, action1)
+                    truncEpisode.append([tuple(start), tuple(action1)])
+                    if (tuple(end) == tuple(start)) and terminated:          # Check whether we have reached terminal state
+                        flag = 1
                     if terminated:
-                        truncEpisode.append([tuple(finalPosition), (0,0), terminated])        # Adds the terminal state as state action pair
-                        if(terminated == 1):
-                            self.stateActionPairs[tuple(finalPosition)][(0,0)]['value'] = self.positiveReward
-                        elif(terminated == -1):
-                            self.stateActionPairs[tuple(finalPosition)][(0,0)]['value'] = self.negativeReward
                         break
+                    
+                if flag:
+                    break 
+                if terminated:
+                    truncEpisode.append([tuple(end), (0,0)])
+                    if terminated == 1:
+                        self.stateActionPairs[tuple(end)][0,0]['value'] = self.positiveReward
+                    elif terminated == -1:
+                        self.stateActionPairs[tuple(end)][0,0]['value'] = self.negativeReward
+                else:
+                    pr = []
+                    # Get the policy from the table and take step S_t+1, A_t+1
+                    for i in self.movements:
+                          pr.append(self.stateActionPairs[tuple(end)][tuple(i)]['probability'])
+                    # Select action, move to next state
+                    action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                    truncEpisode.append([tuple(end), tuple(action2)])
                 
-                # Calculate the TD returns from the entire episode
-                length = len(truncEpisode)
-                gammaFactor = (1 - self.gamma**(length-1)) / (1 - self.gamma)    # Calculate the entire Geometric Progression of gammas
-                newEstimate = (length-1)*self.stepReward*gammaFactor + \
-                               self.gamma*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
+                # Update the State-Action value and s <- s'
+                l = len(truncEpisode)
+                gammaGP = (self.gamma**(l-1) - 1) / (self.gamma - 1)   # GP of gammas to be multiplied with step reward
+                gammaN = self.gamma**(l-1)                             # final gamma
                 oldEstimate = self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value']
+                #print(truncEpisode)
+                #print()
+                newEstimate = self.stepReward*gammaGP + gammaN*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
                 self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
                 
-                
-                if(truncEpisode[0][1] == (0,0) and truncEpisode[1][2]):
-                    break
-                initialPosition = np.copy(truncEpisode[1][0])
+                end = np.copy(truncEpisode[1][0])
                             
     
     """Policy Improvement based on the GLIE technique"""        
