@@ -209,7 +209,7 @@ class Agent(object):
     
    
     """TD(n) Policy Evaluation Function Definition"""
-    # Takes in Number of Episodes
+    # Takes in length of truncated episode, Number of Episodes and learning rate
     # Updates the Action-Value function of visited states
     def td_n(self, n, numEpisodes, alpha):         
         # Repeat TD(n) learning for each epsiode
@@ -233,7 +233,7 @@ class Agent(object):
                     if terminated:
                         break
                     
-                if flag:
+                if flag:        # Terminal state reached
                     break 
                 if terminated:
                     truncEpisode.append([tuple(end), (0,0)])
@@ -255,8 +255,6 @@ class Agent(object):
                 gammaGP = (self.gamma**(l-1) - 1) / (self.gamma - 1)   # GP of gammas to be multiplied with step reward
                 gammaN = self.gamma**(l-1)                             # final gamma
                 oldEstimate = self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value']
-                #print(truncEpisode)
-                #print()
                 newEstimate = self.stepReward*gammaGP + gammaN*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
                 self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
                 
