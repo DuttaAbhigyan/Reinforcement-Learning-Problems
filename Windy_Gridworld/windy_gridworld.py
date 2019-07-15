@@ -209,48 +209,46 @@ class Agent(object):
     
    
     """TD(n) Policy Evaluation Function Definition"""
-    # Takes in length of truncated episode, Number of Episodes and learning rate
+    # Takes in Number of Episodes
     # Updates the Action-Value function of visited states
-    def td_n(self, n, numEpisodes, alpha):         
+    def td_n_on(self, n, numEpisodes, alpha):         
         # Repeat TD(n) learning for each epsiode
         for j in range(numEpisodes):
-            end = np.copy(self.initialPosition)    # Starting of episode is constant
+            start = np.copy(self.initialPosition)
+            pr = []
+            # Get the policy from the table and take step S_t, A_t
+            for i in self.movements:
+                pr.append(self.stateActionPairs[tuple(start)][tuple(i)]['probability'])
+            # Select action, move to next state
+            action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
             while True:
+                terminalCheck = None
+                self.world.terminated = 0
                 truncEpisode = []
+                truncEpisode.append([tuple(start), tuple(action1)])
                 for i in range(n+1):
-                    flag = 0
-                    self.world.terminated = 0
-                    start = np.copy(end)
-                    pr = []
-                    for i in self.movements:
-                        pr.append(self.stateActionPairs[tuple(start)][tuple(i)]['probability'])
-                    # Select action, move to next state
-                    action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
                     end, terminated = self.world.movement(start, action1)
-                    truncEpisode.append([tuple(start), tuple(action1)])
-                    if (tuple(end) == tuple(start)) and terminated:          # Check whether we have reached terminal state
-                        flag = 1
                     if terminated:
-                        break
-                    
-                if flag:        # Terminal state reached
-                    break 
-                if terminated:
-                    truncEpisode.append([tuple(end), (0,0)])
-                    if terminated == 1:
-                        self.stateActionPairs[tuple(end)][0,0]['value'] = self.positiveReward
-                    elif terminated == -1:
-                        self.stateActionPairs[tuple(end)][0,0]['value'] = self.negativeReward
-                else:
-                    pr = []
-                    # Get the policy from the table and take step S_t+1, A_t+1
-                    for i in self.movements:
-                          pr.append(self.stateActionPairs[tuple(end)][tuple(i)]['probability'])
-                    # Select action, move to next state
-                    action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                        action2 = (0,0)
+                        if terminated == 1:
+                            self.stateActionPairs[tuple(end)][action2]['value'] = self.positiveReward
+                        elif terminated == -1:
+                            self.stateActionPairs[tuple(end)][action2]['value'] = self.negativeReward
+                    else:
+                        pr = []
+                        for i in self.movements:
+                            pr.append(self.stateActionPairs[tuple(end)][tuple(i)]['probability'])
+                        # Select action, move to next state
+                        action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                        
                     truncEpisode.append([tuple(end), tuple(action2)])
-                
-                # Update the State-Action value and s <- s'
+                    if terminated:
+                        terminalCheck = self.stateActionPairs[tuple(end)][tuple(action2)]['value']
+                        break
+                    else:
+                        start = np.copy(end)
+                        action1 = np.copy(action2)
+                                 
                 l = len(truncEpisode)
                 gammaGP = (self.gamma**(l-1) - 1) / (self.gamma - 1)   # GP of gammas to be multiplied with step reward
                 gammaN = self.gamma**(l-1)                             # final gamma
@@ -258,7 +256,9 @@ class Agent(object):
                 newEstimate = self.stepReward*gammaGP + gammaN*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
                 self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
                 
-                end = np.copy(truncEpisode[1][0])
+                if((terminalCheck == self.positiveReward or terminalCheck == self.negativeReward) and (len(truncEpisode ) == 2)):
+                    break
+                  
                   
     """SARSA(lambda) Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
@@ -350,7 +350,7 @@ class Agent(object):
             
      # Evaluate a policy using TD sampling methods like 
     def td_policy_evaluation(self, n,  alpha, numEpisodes):
-        self.td_n(n, numEpisodes, alpha)
+        self.td_n_on(n, numEpisodes, alpha)
             
             
     # Find by Policy Iteration the value of State-Action pairs and also the optimal
