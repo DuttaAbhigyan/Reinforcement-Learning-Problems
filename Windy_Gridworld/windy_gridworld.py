@@ -261,6 +261,56 @@ class Agent(object):
                 self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
                 
                 end = np.copy(truncEpisode[1][0])
+                  
+    """SARSA(lambda) Policy Evaluation Function Definition"""
+    # Takes in Number of Episodes
+    # Updates the Action-Value function of visited states (backward view)
+    def sarsa_lambda_evaluation(self, lam, gamma, alpha, numEpisodes, iterations):
+        e = {}           # Maintain eligibility traces
+        
+        # Collect errors, eligibility and returns for each state-action for each episode
+        for j in range(numEpisodes):
+            self.world.terminated = 0
+            start = np.copy(self.initialPosition)
+            pr = []
+            # Get the policy from the table and take step S_t, A_t
+            for i in self.movements:
+                pr.append(self.stateActionPairs[tuple(start)][tuple(i)]['probability'])
+            # Select action, move to next state
+            action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+            while(True):
+                end, terminated = self.world.movement(start, action1)
+                # Record new states in the eligiility trace
+                if (tuple(start), tuple(action1)) not in e:
+                    e[tuple(start), tuple(action1)] = 1
+                else:
+                    e[tuple(start), tuple(action1)] += 1
+                # Get the policy from the table and take step S_t+1, A_t+1
+                if terminated:
+                    action2 = (0,0)
+                    if terminated == 1:
+                        self.stateActionPairs[tuple(end)][action2]['value'] = self.positiveReward
+                    elif terminated == -1:
+                        self.stateActionPairs[tuple(end)][action2]['value'] = self.negativeReward
+                else:
+                    pr = []
+                    for i in self.movements:
+                        pr.append(self.stateActionPairs[tuple(end)][tuple(i)]['probability'])
+                    # Select action, move to next state
+                    action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                
+                delta = self.stepReward + self.gamma*self.stateActionPairs[tuple(end)][tuple(action2)]['value'] - \
+                        self.stateActionPairs[tuple(start)][tuple(action1)]['value']
+                
+                for i in e:
+                    self.stateActionPairs[i[0]][i[1]]['value'] += alpha*delta*e[i]
+                    e[i] = self.gamma*lam*e[i]
+                
+                if terminated:
+                    break
+                else:
+                    start = np.copy(end)
+                    action1 = np.copy(action2)
                             
     
     """Policy Improvement based on the GLIE technique"""        
@@ -313,6 +363,16 @@ class Agent(object):
             self.epsilon = self.epsilon/(i+1)
             self.td_policy_evaluation(n, alpha, numEpisodes)
             self.glie_policy_improvement() 
+     
+   
+   # Find by Policy Iteration the value of State-Action pairs and also the optimal
+    # policy using SARSA(lambda) algorithm
+    def sarsa_lambda_policy_iteration(self, lam, gamma, alpha, numEpisodes, iterations):
+        self.gamma = gamma
+        for i in range(iterations):
+            self.epsilon = self.epsilon/(i+1)
+            self.sarsa_lambda_evaluation(lam, gamma, alpha, numEpisodes, iterations)
+            self.glie_policy_improvement()
                 
             
             
@@ -436,3 +496,25 @@ world = create_world(gridSize, [[0, 1, 1, 0, 0, 0], []], target, falseTarget)
 agent = create_agent(world, gridSize, initialPosition, 'FMC', stepPenalty, 
                      reward, penalty, epsilon)
 agent.td_policy_iteration(gamma, iterations, alpha, n, numEpisodes)"""
+
+# Examples (SARSA):
+#1. Without Wind
+
+"""
+target = np.array([1,4])
+falseTarget = np.array([0,0])
+gridSize = [6,6]
+initialPosition = np.array([3,0])
+reward = 15
+penalty = -5
+stepPenalty = -1
+epsilon = 0.2
+iterations = 10
+numEpisodes = 15000
+gamma = 0.95
+alpha = 0.1
+lam = 0.2
+world = create_world(gridSize, [[], []], target, falseTarget)
+agent = create_agent(world, gridSize, initialPosition, 'FMC', stepPenalty, 
+                     reward, penalty, epsilon)
+agent.sarsa_lambda_policy_iteration(lam, gamma, alpha, numEpisodes, iterations)"""
