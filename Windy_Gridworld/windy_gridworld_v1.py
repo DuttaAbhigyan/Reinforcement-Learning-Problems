@@ -238,6 +238,55 @@ class Agent(object):
                     # Incremental update to mean
                     self.stateActionPairs[e[0]][e[1]]['value'] += (1/self.N[e[0]][e[1]])* \
                                                                   (G - self.stateActionPairs[e[0]][e[1]]['value'])
+                     
+    
+   """Every Visit Monte Carlo Policy Evaluation Function Definition"""
+    # Takes in Number of Episodes
+    # Updates the Action-Value function of visited states.
+    # Updates using Incremental Mean
+    def every_monte_carlo(self, numEpisodes, alpha=None):
+        self.N = {}                                        # Maintain the total number of first visits in all episodes
+        for i in self.stateActionPairs:
+            self.N[i] = {}
+            for j in self.movements:
+                self.N[i][j] = 0
+        
+        # Collect returns and visits for each state-action for each episode
+        for n in range(numEpisodes):
+            G = 0                                     # Accumulate returns over an episode
+            start = self.initialPosition     # Set starting state
+            # Generate an episode
+            episode = []
+            while(True):
+                pr = []
+                # Get the policy from the table
+                for i in self.movements:
+                    pr.append(self.stateActionPairs[start][i]['probability'])
+                # Select action, move to next state, append (S,A) to episode,
+                # re-initialize start to current position, if terminal end episode
+                # else continue
+                action = np.random.choice(np.arange(0, 5), p=pr)
+                finalPosition, terminated = self.world.movement(start, self.movements[action])
+                episode.append([start, self.movements[action]])
+                if terminated:
+                    episode.append([finalPosition, (0,0)])        # Adds the terminal state as state action pair
+                    if(terminated == 1):
+                        self.stateActionPairs[finalPosition][(0,0)]['value'] = self.positiveReward
+                    elif(terminated == -1):
+                        self.stateActionPairs[finalPosition][(0,0)]['value'] = self.negativeReward
+                    break    
+                start = finalPosition
+    
+            # Calculate the returns from the entire episode
+            for j, e in reversed(list(enumerate(episode))):
+                if(j == len(episode)-1):
+                    G = self.stateActionPairs[e[0]][e[1]]['value']
+                else:
+                    G = self.gamma*G + self.stepCost
+                self.N[e[0]][e[1]] += 1
+                # Incremental update to mean
+                self.stateActionPairs[e[0]][e[1]]['value'] += (1/self.N[e[0]][e[1]])* \
+                                                              (G - self.stateActionPairs[e[0]][e[1]]['value'])
 
     
     
