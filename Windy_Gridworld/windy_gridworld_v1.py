@@ -194,7 +194,7 @@ class Agent(object):
     # Takes in Number of Episodes
     # Updates the Action-Value function of visited states.
     # Updates using Incremental Mean
-    def first_monte_carlo(self, numEpisodes, n = None, alpha=None):
+    def first_monte_carlo(self, numEpisodes, n = None, alpha=None, lam=None):
         self.N = {}                                        # Maintain the total number of first visits in all episodes
         for i in self.stateActionPairs:
             self.N[i] = {}
@@ -244,7 +244,7 @@ class Agent(object):
     # Takes in Number of Episodes
     # Updates the Action-Value function of visited states.
     # Updates using Incremental Mean
-    def every_monte_carlo(self, numEpisodes, n = None, alpha=None):
+    def every_monte_carlo(self, numEpisodes, n = None, alpha=None, lam=None):
         self.N = {}                                        # Maintain the total number of first visits in all episodes
         for i in self.stateActionPairs:
             self.N[i] = {}
@@ -292,7 +292,7 @@ class Agent(object):
    """TD(n) Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
     # Updates the Action-Value function of visited states
-    def td_n_on(self, numEpisodes, n, alpha):
+    def td_n_on(self, numEpisodes, n, alpha, lam=None):
         self.N = {}                                        # Maintain the total number of first visits in all episodes
         for i in self.stateActionPairs:                    # for GLIE policy improvement
             self.N[i] = {}
@@ -388,13 +388,14 @@ class Agent(object):
     """Generalized Policy Iteration step, takes in the policy evaluation function,
        the policy improvement function, alpha if required, epsilon if required"""
     def generalized_policy_iteration(self, iterations, evaluationFunction, numEpisodes, 
-                                     improvementFunction, n = None, alpha=None, epsilon=None):
+                                     improvementFunction, n = None, alpha=None, epsilon=None,
+                                     lam=None):
     
         evaluationFunction = getattr(Agent, evaluationFunction)
         improvementFunction = getattr(Agent, improvementFunction)
         
         for i in range(iterations):
             print('Iteration: ' + str(i+1))
-            evaluationFunction(self, numEpisodes, n, alpha)
+            evaluationFunction(self, numEpisodes, n, alpha, lam)
             improvementFunction(self, epsilon)
     
