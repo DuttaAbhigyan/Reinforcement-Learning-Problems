@@ -349,8 +349,66 @@ class Agent(object):
                 start = truncEpisode[1][0]
                 action1 = truncEpisode[1][1]
                 self.N[start][action1] += 1
-
+                  
     
+   """SARSA(lambda) Policy Evaluation Function Definition"""
+    # Takes in Number of Episodes
+    # Updates the Action-Value function of visited states (backward view)            
+    def sarsa_lambda(self, numEpisodes, n, alpha, lam):
+        self.N = {}                                        # Maintain the total number of first visits in all episodes
+        for i in self.stateActionPairs:                    # for GLIE policy improvement
+            self.N[i] = {}
+            for j in self.movements:
+                self.N[i][j] = 0 
+                
+        e = {}           # Maintain eligibility traces
+        
+        # Collect errors, eligibility and returns for each state-action for each episode
+        for j in range(numEpisodes):
+            start = self.initialPosition
+            pr = []
+            # Get the policy from the table and take step S_t, A_t
+            for i in self.movements:
+                pr.append(self.stateActionPairs[start][i]['probability'])
+            # Select action, move to next state
+            action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+            while(True):
+                finalPosition, terminated = self.world.movement(start, action1)
+                # Record new states in the eligiility trace
+                if (start, action1) not in e:
+                    e[start, action1] = 1
+                    self.N[start][action1] = 1
+                else:
+                    e[start, action1] += 1
+                    self.N[start][action1] += 1
+                # Get the policy from the table and take step S_t+1, A_t+1
+                if terminated:
+                    action2 = (0,0)
+                    if terminated == 1:
+                        self.stateActionPairs[finalPosition][action2]['value'] = self.positiveReward
+                    elif terminated == -1:
+                        self.stateActionPairs[finalPosition][action2]['value'] = self.negativeReward
+                else:
+                    pr = []
+                    for i in self.movements:
+                        pr.append(self.stateActionPairs[finalPosition][i]['probability'])
+                    # Select action, move to next state
+                    action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                
+                delta = self.stepCost + self.gamma*self.stateActionPairs[finalPosition][action2]['value'] - \
+                        self.stateActionPairs[start][action1]['value']
+                
+                for i in e:
+                    self.stateActionPairs[i[0]][i[1]]['value'] += alpha*delta*e[i]
+                    e[i] = self.gamma*lam*e[i]
+                
+                if terminated:
+                    break
+                else:
+                    start = finalPosition
+                    action1 = action2
+            
+                        
     
     """GLIE Policy Improvement"""
     # Takes in visits to epsilon and visits to state and updates the policy to 
