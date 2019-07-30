@@ -287,6 +287,68 @@ class Agent(object):
                 # Incremental update to mean
                 self.stateActionPairs[e[0]][e[1]]['value'] += (1/self.N[e[0]][e[1]])* \
                                                               (G - self.stateActionPairs[e[0]][e[1]]['value'])
+               
+    
+   """TD(n) Policy Evaluation Function Definition"""
+    # Takes in Number of Episodes
+    # Updates the Action-Value function of visited states
+    def td_n_on(self, numEpisodes, n, alpha):
+        self.N = {}                                        # Maintain the total number of first visits in all episodes
+        for i in self.stateActionPairs:                    # for GLIE policy improvement
+            self.N[i] = {}
+            for j in self.movements:
+                self.N[i][j] = 0 
+                
+        # Repeat TD(n) learning for each epsiode
+        for j in range(numEpisodes):
+            start = self.initialPosition
+            pr = []
+            # Get the policy from the table and take step S_t, A_t
+            for i in self.movements:
+                pr.append(self.stateActionPairs[start][i]['probability'])
+            # Select action, move to next state
+            action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+            self.N[start][action1] += 1
+            while True:
+                flag = 0
+                truncEpisode = []
+                truncEpisode.append([start, action1])
+                for i in range(n+1):
+                    finalPosition, terminated = self.world.movement(start, action1)
+                    if terminated:
+                        # Check whether the starting state is the terminal state itself
+                        if start == finalPosition:
+                            flag = 1 
+                        truncEpisode.append([finalPosition, (0,0)])        # Adds the terminal state as state action pair
+                        if(terminated == 1):
+                            self.stateActionPairs[finalPosition][(0,0)]['value'] = self.positiveReward
+                        elif(terminated == -1):
+                            self.stateActionPairs[finalPosition][(0,0)]['value'] = self.negativeReward
+                        break
+                    else:
+                        pr = []
+                        for i in self.movements:
+                            pr.append(self.stateActionPairs[finalPosition][i]['probability'])
+                        # Select action, move to next state
+                        action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                        truncEpisode.append([finalPosition, action2])
+                        start = np.copy(finalPosition)
+                        action1 = np.copy(action2)
+                
+                # Trajectory complete
+                if flag:
+                    break
+
+                # Calculating estimates for trajectory of length 'n'
+                l = len(truncEpisode)
+                gammaGP = (self.gamma**(l-1) - 1) / (self.gamma - 1)   # GP of gammas to be multiplied with step reward
+                gammaN = self.gamma**(l-1)                             # final gamma
+                oldEstimate = self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value']
+                newEstimate = self.stepCost*gammaGP + gammaN*self.stateActionPairs[truncEpisode[-1][0]][truncEpisode[-1][1]]['value']
+                self.stateActionPairs[truncEpisode[0][0]][truncEpisode[0][1]]['value'] += alpha*(newEstimate - oldEstimate)
+                start = truncEpisode[1][0]
+                action1 = truncEpisode[1][1]
+                self.N[start][action1] += 1
 
     
     
