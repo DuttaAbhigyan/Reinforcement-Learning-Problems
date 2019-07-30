@@ -332,8 +332,8 @@ class Agent(object):
                         # Select action, move to next state
                         action2 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
                         truncEpisode.append([finalPosition, action2])
-                        start = np.copy(finalPosition)
-                        action1 = np.copy(action2)
+                        start = finalPosition
+                        action1 = action2
                 
                 # Trajectory complete
                 if flag:
