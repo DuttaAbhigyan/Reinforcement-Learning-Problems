@@ -289,7 +289,7 @@ class Agent(object):
                                                               (G - self.stateActionPairs[e[0]][e[1]]['value'])
                
     
-   """TD(n) Policy Evaluation Function Definition"""
+   """TD(n) On-Policy Evaluation Function Definition"""
     # Takes in Number of Episodes
     # Updates the Action-Value function of visited states
     def td_n_on(self, numEpisodes, n, alpha, lam=None):
