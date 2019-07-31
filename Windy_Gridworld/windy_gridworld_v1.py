@@ -407,8 +407,58 @@ class Agent(object):
                 else:
                     start = finalPosition
                     action1 = action2
+
+                  
+    """TD(0) Off-Policy Evaluation Function Definition"""
+    # Takes in Number of Episodes
+    # Updates the Action-Value function of visited states
+    def td_off(self, numEpisodes, n, alpha, lam=None):
+        self.N = {}                                        # Maintain the total number of first visits in all episodes
+        for i in self.stateActionPairs:                    # for GLIE policy improvement
+            self.N[i] = {}
+            for j in self.movements:
+                self.N[i][j] = 0 
+                
+        # Repeat TD(0) learning for each epsiode
+        for j in range(numEpisodes):
+            start = self.initialPosition
+            while True:
+                pr = []
+                # Get the policy from the table and take step S_t, A_t
+                for i in self.movements:
+                    pr.append(self.stateActionPairs[start][i]['probability'])
+                # Select action, move to next state
+                action1 = self.movements[np.random.choice(np.arange(0, 5), p=pr)]
+                self.N[start][action1] += 1
+                truncEpisode = []
+                truncEpisode.append([start, action1])
+                finalPosition, terminated = self.world.movement(start, action1)
+                if terminated:
+                    truncEpisode.append([finalPosition, (0,0)])        # Adds the terminal state as state action pair (greedy action)
+                    if(terminated == 1):
+                        self.stateActionPairs[finalPosition][(0,0)]['value'] = self.positiveReward
+                        greedyValue = self.positiveReward
+                    elif(terminated == -1):
+                        self.stateActionPairs[finalPosition][(0,0)]['value'] = self.negativeReward
+                        greedyValue = self.negativeReward
+                else:
+                    # Select greedy action of next state
+                    greedyValue = -np.inf
+                    for m in self.stateActionPairs[finalPosition]:
+                        if(greedyValue < self.stateActionPairs[finalPosition][m]['value']):
+                            greedyValue = self.stateActionPairs[finalPosition][m]['value']
+                    
+                oldValue = self.stateActionPairs[start][action1]['value'] 
+                greedyValue = self.stepCost + self.gamma*greedyValue
+                self.stateActionPairs[start][action1]['value']  += alpha*(greedyValue-oldValue)
+                
+                # Trajectory complete
+                if terminated:
+                    break
+                start = finalPosition
             
-                        
+                 
+               
     
     """GLIE Policy Improvement"""
     # Takes in visits to epsilon and visits to state and updates the policy to 
