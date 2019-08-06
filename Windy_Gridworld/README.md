@@ -4,3 +4,4 @@ desired and an un-desired terminal state. On reaching a desired terminal state t
 be rewarded, and will be penalised on reaching an un-desired terminal state.
 
 2.) Windy Gridwold (Version1) - Alongwith bug fixes, now cotains an easily configurable Stochastic Environment.
+    The approaches used to solve the problems are MC+GLIE, TD(n)+GLIE, SARSA+GLIE and Q-Learning+Glie.
